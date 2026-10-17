@@ -318,8 +318,11 @@ export async function upsertProfile(input: Partial<Profile> & { id?: string }): 
       .update(row)
       .eq('id', input.id)
       .select('*')
-      .single();
+      .maybeSingle();
     if (error) throw error;
+    // Zero rows means RLS hid the row or it no longer exists; `.single()`
+    // would surface this as an opaque HTTP 406.
+    if (!data) throw new Error('Profil tidak ditemukan atau Anda tidak memiliki akses untuk mengubahnya.');
     return fromRow(data);
   } else {
     const { data, error } = await supabase.from(TABLE).insert(row).select('*').single();
