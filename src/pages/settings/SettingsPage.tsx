@@ -1797,7 +1797,14 @@ const Settings: React.FC<SettingsProps> = ({ profile, setProfile, transactions, 
             // Simpan parsial: hanya kolom yang benar-benar berubah yang ditulis,
             // supaya logo base64 & konfigurasi halaman publik tidak terkirim ulang
             // setiap kali satu teks diedit.
-            const updated = await upsertProfile(buildProfilePatch(profile, localProfile));
+            const patch = buildProfilePatch(profile, localProfile);
+            const changedKeys = Object.keys(patch).filter(k => k !== 'id');
+            if (changedKeys.length === 0) {
+                setShowSuccess(true);
+                setTimeout(() => setShowSuccess(false), 3000);
+                return;
+            }
+            const updated = await upsertProfile(patch);
             setProfile(updated);
             setLocalProfile(updated);
             setShowSuccess(true);

@@ -144,6 +144,8 @@ function toRow(p: Partial<Profile>): any {
     ...(p.termsAndConditions !== undefined ? { terms_and_conditions: p.termsAndConditions } : {}),
     ...(p.logoBase64 !== undefined ? { logo_base64: p.logoBase64 || null } : {}),
     ...(p.signatureBase64 !== undefined ? { signature_base64: p.signatureBase64 || null } : {}),
+    ...(p.instagram !== undefined ? { instagram: p.instagram } : {}),
+    ...(p.contractTemplate !== undefined ? { contract_template: p.contractTemplate } : {}),
     ...(p.brandColor !== undefined ? { brand_color: p.brandColor } : {}),
     ...(p.publicPageConfig !== undefined ? {
       // Only write to JSONB column that actually exists in the current schema
@@ -313,16 +315,43 @@ export async function upsertProfile(input: Partial<Profile> & { id?: string }): 
     row.admin_user_id = data.user.id;
   }
   if (input.id) {
-    const { data, error } = await supabase
+    // Jika tidak ada kolom yang berubah (misalnya user menekan simpan tanpa mengubah input),
+    // jangan panggil update({}) karena PostgREST akan mengembalikan 0 baris dan memicu error 406.
+    if (Object.keys(row).length === 0) {
+      const { data: existing, error: fetchErr } = await supabase
+        .from(TABLE)
+        .select('*')
+        .eq('id', input.id)
+        .maybeSingle();
+      if (fetchErr) throw fetchErr;
+      if (existing) return fromRow(existing);
+      const current = await getProfile();
+      if (current) return current;
+      throw new Error('Profil tidak ditemukan.');
+    }
+
+    const query = supabase
       .from(TABLE)
       .update(row)
       .eq('id', input.id)
-      .select('*')
-      .maybeSingle();
-    if (error) throw error;
-    // Zero rows means RLS hid the row or it no longer exists; `.single()`
-    // would surface this as an opaque HTTP 406.
-    if (!data) throw new Error('Profil tidak ditemukan atau Anda tidak memiliki akses untuk mengubahnya.');
+      .select('*');
+
+    const { data, error } = typeof (query as any).maybeSingle === 'function'
+      ? await (query as any).maybeSingle()
+      : await (query as any).single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        const current = await getProfile();
+        if (current) return current;
+      }
+      throw error;
+    }
+    if (!data) {
+      const current = await getProfile();
+      if (current) return current;
+      throw new Error('Profil tidak ditemukan atau Anda tidak memiliki akses untuk mengubahnya.');
+    }
     return fromRow(data);
   } else {
     const { data, error } = await supabase.from(TABLE).insert(row).select('*').single();
