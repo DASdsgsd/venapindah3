@@ -167,6 +167,8 @@ function App() {
           notifications={auxData.notifications}
           handleNavigation={routing.handleNavigation}
           handleMarkAllAsRead={auxData.handleMarkAllAsRead}
+          handleMarkAsRead={auxData.handleMarkAsRead}
+          handleDeleteNotification={auxData.handleDeleteNotification}
           currentUser={auth.currentUser}
           profile={auxData.profile}
           handleLogout={auth.handleLogout}

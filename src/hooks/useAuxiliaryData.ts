@@ -10,7 +10,11 @@ import {
   ClientFeedback,
 } from "../types";
 import { createTeamPaymentRecord } from "../services/teamPaymentRecords";
-import { createNotification as createNotificationRow } from "../services/notifications";
+import {
+  createNotification as createNotificationRow,
+  updateNotification as updateNotificationRow,
+  deleteNotification as deleteNotificationRow,
+} from "../services/notifications";
 import { createClient } from "../services/clients";
 import {
   useContractsQuery,
@@ -56,6 +60,7 @@ export interface UseAuxiliaryDataReturn {
   ) => Promise<void>;
   handleMarkAsRead: (notificationId: string) => void;
   handleMarkAllAsRead: () => void;
+  handleDeleteNotification: (notificationId: string) => void;
 }
 
 const EMPTY_PROFILE = {
@@ -185,10 +190,26 @@ export function useAuxiliaryData({
     setNotifications((prev) =>
       prev.map((n) => (n.id === notificationId ? { ...n, isRead: true } : n)),
     );
+    void updateNotificationRow(notificationId, { isRead: true }).catch((err) => {
+      console.warn("[Notifications] Failed to persist isRead to Supabase:", err);
+    });
   }, [setNotifications]);
 
   const handleMarkAllAsRead = useCallback(() => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    setNotifications((prev) => {
+      const unreadIds = prev.filter((n) => !n.isRead).map((n) => n.id);
+      unreadIds.forEach((id) => {
+        void updateNotificationRow(id, { isRead: true }).catch(() => {});
+      });
+      return prev.map((n) => ({ ...n, isRead: true }));
+    });
+  }, [setNotifications]);
+
+  const handleDeleteNotification = useCallback((notificationId: string) => {
+    setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
+    void deleteNotificationRow(notificationId).catch((err) => {
+      console.warn("[Notifications] Failed to delete notification in Supabase:", err);
+    });
   }, [setNotifications]);
 
   // ─── One-time localStorage → Supabase migrations ──────────────────────
@@ -306,6 +327,7 @@ export function useAuxiliaryData({
     addNotification,
     handleMarkAsRead,
     handleMarkAllAsRead,
+    handleDeleteNotification,
   };
 }
 

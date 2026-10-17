@@ -3,6 +3,8 @@ import { Menu as MenuIcon, Search as SearchIcon, Bell as BellIcon } from 'lucide
 import { ViewType, User, Notification, NavigationAction, Profile } from '../types';
 import { LightbulbIcon, ClockIcon, CheckSquareIcon, MessageSquareIcon, DollarSignIcon, UsersIcon, LogOutIcon, WhatsappIcon } from '../constants';
 
+import NotificationCenter from '../components/notifications/NotificationCenter';
+
 interface HeaderProps {
     pageTitle: ViewType;
     toggleSidebar: () => void;
@@ -10,6 +12,8 @@ interface HeaderProps {
     notifications: Notification[];
     handleNavigation: (view: ViewType, action?: NavigationAction, notificationId?: string) => void;
     handleMarkAllAsRead: () => void;
+    handleMarkAsRead?: (notificationId: string) => void;
+    handleDeleteNotification?: (notificationId: string) => void;
     currentUser: User | null;
     profile: Profile;
     handleLogout: () => void;
@@ -39,7 +43,19 @@ const notificationIcons: { [key in Notification['icon']]: React.ReactNode } = {
     comment: <WhatsappIcon className="w-5 h-5 text-cyan-400" />,
 };
 
-const Header: React.FC<HeaderProps> = ({ pageTitle, toggleSidebar, setIsSearchOpen, notifications, handleNavigation, handleMarkAllAsRead, currentUser, profile, handleLogout }) => {
+const Header: React.FC<HeaderProps> = ({
+    pageTitle,
+    toggleSidebar,
+    setIsSearchOpen,
+    notifications,
+    handleNavigation,
+    handleMarkAllAsRead,
+    handleMarkAsRead,
+    handleDeleteNotification,
+    currentUser,
+    profile,
+    handleLogout,
+}) => {
     const [isNotifOpen, setIsNotifOpen] = useState(false);
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const notifRef = useRef<HTMLDivElement>(null);
@@ -67,6 +83,9 @@ const Header: React.FC<HeaderProps> = ({ pageTitle, toggleSidebar, setIsSearchOp
     }, []);
 
     const onNotificationClick = (notification: Notification) => {
+        if (handleMarkAsRead) {
+            handleMarkAsRead(notification.id);
+        }
         if (notification.link) {
             handleNavigation(notification.link.view, notification.link.action, notification.id);
         }
@@ -240,143 +259,16 @@ const Header: React.FC<HeaderProps> = ({ pageTitle, toggleSidebar, setIsSearchOp
                             )}
                         </button>
                         
-                        {/* Enhanced Notification Dropdown */}
-                        {isNotifOpen && (
-                            <div className="
-                                absolute top-full right-0 
-                                mt-3 
-                                w-80 sm:w-96 
-                                bg-brand-surface 
-                                rounded-2xl 
-                                shadow-2xl 
-                                border border-brand-border/50 
-                                z-[60]
-                                animate-slide-down
-                                max-h-96
-                                flex flex-col
-                                overflow-hidden
-                            ">
-                                {/* Header */}
-                                <div className="
-                                    flex justify-between items-center 
-                                    p-4 sm:p-5 
-                                    border-b border-brand-border/50
-                                    bg-brand-surface/90
-                                    flex-shrink-0
-                                ">
-                                    <h4 className="font-semibold text-brand-text-light">
-                                        Notifikasi
-                                    </h4>
-                                    {unreadCount > 0 && (
-                                        <button 
-                                            onClick={handleMarkAllAsRead} 
-                                            className="
-                                                text-xs 
-                                                font-semibold 
-                                                text-brand-accent 
-                                                hover:text-brand-accent-hover
-                                                active:text-brand-accent-hover 
-                                                px-3 py-1.5
-                                                rounded-lg
-                                                hover:bg-brand-accent/10
-                                                active:bg-brand-accent/20
-                                                transition-all duration-200
-                                                min-h-[44px]
-                                            "
-                                        >
-                                            Tandai semua dibaca
-                                        </button>
-                                    )}
-                                </div>
-                                
-                                {/* Notifications List */}
-                                <div className="
-                                    max-h-80 
-                                    overflow-y-auto 
-                                    overscroll-contain
-                                    flex-1
-                                " 
-                                style={{ WebkitOverflowScrolling: 'touch' }}>
-                                    {notifications.length > 0 ? (
-                                        notifications.map(notif => (
-                                            <div 
-                                                key={notif.id}
-                                                onClick={() => onNotificationClick(notif)}
-                                                className={`
-                                                    flex items-start gap-3 sm:gap-4 
-                                                    p-3 sm:p-4 
-                                                    border-b border-brand-border/30 
-                                                    last:border-b-0 
-                                                    cursor-pointer 
-                                                    transition-all duration-200
-                                                    hover:bg-brand-input/50
-                                                    active:bg-brand-input/80
-                                                    min-h-[60px]
-                                                    ${!notif.isRead ? 'bg-brand-accent/5 border-l-4 border-l-brand-accent' : ''}
-                                                `}
-                                            >
-                                                <div className="flex-shrink-0 mt-0.5">
-                                                    {notificationIcons[notif.icon]}
-                                                </div>
-                                                <div className="flex-grow min-w-0">
-                                                    <p className="
-                                                        font-semibold 
-                                                        text-sm 
-                                                        text-brand-text-light
-                                                        leading-tight
-                                                        mb-1
-                                                    ">
-                                                        {notif.title}
-                                                    </p>
-                                                    <p className="
-                                                        text-xs 
-                                                        text-brand-text-secondary
-                                                        leading-relaxed
-                                                        line-clamp-2
-                                                    ">
-                                                        {notif.message}
-                                                    </p>
-                                                </div>
-                                                <div className="
-                                                    flex-shrink-0 
-                                                    text-right
-                                                    flex flex-col items-end
-                                                    gap-1
-                                                ">
-                                                    <p className="
-                                                        text-xs 
-                                                        text-brand-text-secondary
-                                                        whitespace-nowrap
-                                                    ">
-                                                        {getRelativeTime(notif.timestamp)}
-                                                    </p>
-                                                    {!notif.isRead && (
-                                                        <div className="
-                                                            w-2 h-2 
-                                                            bg-brand-accent 
-                                                            rounded-full 
-                                                            shadow-sm
-                                                        "></div>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <div className="
-                                            text-center 
-                                            text-sm 
-                                            text-brand-text-secondary 
-                                            p-8
-                                            flex flex-col items-center
-                                            gap-3
-                                        ">
-                                            <BellIcon className="w-8 h-8 opacity-50" />
-                                            <p>Tidak ada notifikasi.</p>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        )}
+                        {/* Redesigned Notification Center (Desktop Popover & Mobile Drawer) */}
+                        <NotificationCenter
+                            isOpen={isNotifOpen}
+                            onClose={() => setIsNotifOpen(false)}
+                            notifications={notifications}
+                            onNotificationClick={onNotificationClick}
+                            onMarkAsRead={handleMarkAsRead || (() => {})}
+                            onMarkAllAsRead={handleMarkAllAsRead}
+                            onDeleteNotification={handleDeleteNotification}
+                        />
                     </div>
 
                     {/* User Profile Dropdown */}

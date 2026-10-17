@@ -258,6 +258,97 @@ export const WebPushNotificationPanel: React.FC<WebPushNotificationPanelProps> =
         )}
       </div>
 
+      {/* Platform Compatibility & Setup Guide Cards */}
+      <div className="bg-brand-surface rounded-2xl border border-brand-border p-5 sm:p-6 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-brand-border pb-3">
+          <div>
+            <h4 className="text-sm font-bold text-brand-text-light flex items-center gap-2">
+              <Laptop className="w-4 h-4 text-brand-accent" />
+              Panduan Kompatibilitas Sistem Operasi
+            </h4>
+            <p className="text-xs text-brand-text-secondary mt-0.5">
+              Notifikasi push native mengikuti standar sistem operasi perangkat Anda.
+            </p>
+          </div>
+          <span className="text-[11px] font-semibold px-2.5 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-lg">
+            Standar Web Push RFC 8292
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+          {/* iOS Safari */}
+          <div className={`p-4 rounded-xl border transition-all ${deviceType === 'ios' ? 'bg-blue-50/50 dark:bg-blue-950/20 border-blue-500/50 ring-1 ring-blue-500/30' : 'bg-brand-bg border-brand-border/60'}`}>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center text-xs font-bold">
+                iOS
+              </div>
+              <div>
+                <p className="text-xs font-bold text-brand-text-light">Safari iPhone / iPad</p>
+                <p className="text-[10px] text-brand-text-secondary">iOS 16.4 ke atas</p>
+              </div>
+            </div>
+            <p className="text-[11px] text-brand-text-secondary leading-relaxed">
+              Wajib ditambahkan ke <strong>Layar Utama (Add to Home Screen)</strong> lewat menu Bagikan Safari agar izin push dapat diaktifkan.
+            </p>
+          </div>
+
+          {/* Android Chrome */}
+          <div className={`p-4 rounded-xl border transition-all ${deviceType === 'android' ? 'bg-blue-50/50 dark:bg-blue-950/20 border-blue-500/50 ring-1 ring-blue-500/30' : 'bg-brand-bg border-brand-border/60'}`}>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-xs font-bold">
+                AND
+              </div>
+              <div>
+                <p className="text-xs font-bold text-brand-text-light">Chrome Android</p>
+                <p className="text-[10px] text-brand-text-secondary">Semua Android modern</p>
+              </div>
+            </div>
+            <p className="text-[11px] text-brand-text-secondary leading-relaxed">
+              Cukup tekan <strong>Aktifkan Notifikasi</strong> dan pilih <em>Izinkan (Allow)</em> pada pop-up izin browser Chrome Anda.
+            </p>
+          </div>
+
+          {/* macOS Safari */}
+          <div className={`p-4 rounded-xl border transition-all ${deviceType === 'safari_mac' ? 'bg-blue-50/50 dark:bg-blue-950/20 border-blue-500/50 ring-1 ring-blue-500/30' : 'bg-brand-bg border-brand-border/60'}`}>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-7 h-7 rounded-lg bg-indigo-600 text-white flex items-center justify-center text-xs font-bold">
+                MAC
+              </div>
+              <div>
+                <p className="text-xs font-bold text-brand-text-light">Safari macOS</p>
+                <p className="text-[10px] text-brand-text-secondary">macOS Ventura ke atas</p>
+              </div>
+            </div>
+            <p className="text-[11px] text-brand-text-secondary leading-relaxed">
+              Mendukung notifikasi web push langsung di Notification Center Mac. Pastikan System Settings tidak mematikan notifikasi Safari.
+            </p>
+          </div>
+
+          {/* Desktop Chrome / Edge */}
+          <div className={`p-4 rounded-xl border transition-all ${deviceType === 'desktop' ? 'bg-blue-50/50 dark:bg-blue-950/20 border-blue-500/50 ring-1 ring-blue-500/30' : 'bg-brand-bg border-brand-border/60'}`}>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-7 h-7 rounded-lg bg-purple-600 text-white flex items-center justify-center text-xs font-bold">
+                PC
+              </div>
+              <div>
+                <p className="text-xs font-bold text-brand-text-light">Chrome / Edge Desktop</p>
+                <p className="text-[10px] text-brand-text-secondary">Windows &amp; Linux</p>
+              </div>
+            </div>
+            <p className="text-[11px] text-brand-text-secondary leading-relaxed">
+              Bekerja di latar belakang via Windows Action Center. Pop-up muncul di sudut layar saat ada aktivitas baru.
+            </p>
+          </div>
+        </div>
+
+        <div className="p-3 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200/60 dark:border-slate-800 text-xs text-slate-500 flex items-center gap-2">
+          <Info className="w-4 h-4 text-blue-600 shrink-0" />
+          <span>
+            <strong>Catatan Sistem:</strong> Tampilan banner notifikasi native di layar kunci dan bilah notifikasi HP secara otomatis mengikuti tampilan tema sistem operasi perangkat Anda.
+          </span>
+        </div>
+      </div>
+
       {/* iOS Special Guidance Card */}
       {isIOSDevice && !isPwaMode && (
         <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-5 sm:p-6">
